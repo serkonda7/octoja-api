@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent client — API reference</title>
+<style>
+:root { color-scheme: light dark; --bg: #fff; --fg: #1a1a1a; --muted: #666; --card: #f6f6f4; --border: #ddd; --accent: #0b5fff; }
+@media (prefers-color-scheme: dark) { :root { --bg: #141414; --fg: #e8e8e8; --muted: #aaa; --card: #1e1e1e; --border: #333; --accent: #7aa5ff; } }
+* { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); margin: 0; line-height: 1.5; }
+header.top { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 1rem; z-index: 10; }
+header.top h1 { margin: 0 0 0.25rem; font-size: 1.4rem; }
+header.top p.sub { margin: 0 0 0.75rem; color: var(--muted); }
+.controls { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.controls input[type="search"] { flex: 1; min-width: 200px; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); }
+.controls button { padding: 0.5rem 0.75rem; cursor: pointer; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--fg); }
+.controls #count { color: var(--muted); font-size: 0.9rem; }
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: start; }
+aside.sidebar { position: sticky; top: var(--top, 170px); max-height: calc(100vh - var(--top, 170px)); overflow-y: auto; border-right: 1px solid var(--border); padding: 1rem 0.75rem 2rem 1rem; }
+aside.sidebar nav { display: flex; flex-direction: column; gap: 0.15rem; }
+.side-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0.75rem 0 0.25rem; }
+.side-label:first-child { margin-top: 0; }
+.nav-link { display: flex; justify-content: space-between; gap: 0.5rem; text-decoration: none; color: var(--fg); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.9rem; }
+.nav-link:hover { background: var(--card); }
+.nav-link.active { background: var(--card); outline: 1px solid var(--accent); }
+.nav-link span { color: var(--muted); }
+main { padding: 1rem; max-width: 960px; min-width: 0; }
+main h2, details.resource { scroll-margin-top: calc(var(--top, 170px) + 12px); }
+@media (max-width: 860px) {
+  .layout { display: block; }
+  aside.sidebar { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; }
+  aside.sidebar nav { flex-direction: row; overflow-x: auto; gap: 0.4rem; align-items: center; }
+  .side-label { display: none; }
+  .nav-link { white-space: nowrap; border: 1px solid var(--border); }
+}
+pre { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; overflow-x: auto; }
+details.resource { border: 1px solid var(--border); border-radius: 8px; margin: 1rem 0; padding: 0 1rem 1rem; }
+details.resource summary { cursor: pointer; padding: 0.75rem 0; font-size: 1.1rem; }
+details.resource summary .count { color: var(--muted); margin-left: 0.5rem; font-size: 0.9rem; }
+details.resource summary .src { display: block; font-size: 0.8rem; color: var(--muted); }
+article.method { border-top: 1px solid var(--border); padding: 0.75rem 0; }
+article.method h4 { margin: 0 0 0.4rem; display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap; }
+article.method h4 code { overflow-wrap: anywhere; }
+.meta { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem; }
+.badge { font-weight: 700; font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 4px; color: #fff; }
+.badge.get { background: #2a7f3f; } .badge.post { background: #0b5fff; } .badge.put { background: #b26a00; }
+.badge.del { background: #c0392b; } .badge.patch { background: #6c3483; } .badge.other { background: #666; }
+#empty { padding: 2rem 1rem; color: var(--muted); }
+footer { padding: 1rem; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+code { font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<header class="top">
+<h1>Agent client (<code>createAgentClient</code>)</h1>
+<p class="sub">10 resources, 37 methods. All methods return the success body directly and throw <code>OctojaApiError</code> on non-2xx. Regenerate with <code>bun run docs</code>.</p>
+<div class="controls">
+<input id="q" type="search" placeholder="Filter methods, e.g. tickets, check-results, POST /api/agents/..." autocomplete="off">
+<button type="button" id="expand">Expand all</button>
+<button type="button" id="collapse">Collapse all</button>
+<span id="count" aria-live="polite"></span>
+</div>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav aria-label="Page navigation">
+<div class="side-label">Guide</div>
+<a class="nav-link" href="#usage" data-target="usage">Usage</a>
+<a class="nav-link" href="#options" data-target="options">createAgentClient(options)</a>
+<a class="nav-link" href="#errors" data-target="errors">OctojaApiError</a>
+<div class="side-label">Resources</div>
+<a class="nav-link" href="#agent-agents" data-target="agent-agents"><code>agent.agents</code><span>7</span></a>
+<a class="nav-link" href="#agent-assets" data-target="agent-assets"><code>agent.assets</code><span>4</span></a>
+<a class="nav-link" href="#agent-auth" data-target="agent-auth"><code>agent.auth</code><span>3</span></a>
+<a class="nav-link" href="#agent-branding" data-target="agent-branding"><code>agent.branding</code><span>3</span></a>
+<a class="nav-link" href="#agent-checkAssignments" data-target="agent-checkAssignments"><code>agent.checkAssignments</code><span>2</span></a>
+<a class="nav-link" href="#agent-customPackages" data-target="agent-customPackages"><code>agent.customPackages</code><span>3</span></a>
+<a class="nav-link" href="#agent-networkDiscovery" data-target="agent-networkDiscovery"><code>agent.networkDiscovery</code><span>2</span></a>
+<a class="nav-link" href="#agent-patchManagement" data-target="agent-patchManagement"><code>agent.patchManagement</code><span>3</span></a>
+<a class="nav-link" href="#agent-softwareDeployment" data-target="agent-softwareDeployment"><code>agent.softwareDeployment</code><span>3</span></a>
+<a class="nav-link" href="#agent-tickets" data-target="agent-tickets"><code>agent.tickets</code><span>7</span></a></nav></aside>
+<main>
+<h2 id="usage">Usage</h2>
+<pre><code>import { createAgentClient } from 'octoja-api'
+
+const agent = createAgentClient({ baseUrl: 'https://acme.eu1.octoja.cloud' })
+await agent.auth.login({ agentId, secret }) // device-agent credentials
+
+const assignments = await agent.checkAssignments.list()</code></pre>
+<h2 id="options">createAgentClient(options)</h2>
+<p>Isolated hey-api instance (no shared <code>client</code> singleton, so technician tokens cannot leak into agent requests).</p>
+<pre><code>interface CreateAgentClientOptions {
+/**
+	 * Base URL of the Octoja instance, e.g. `https://acme.eu1.octoja.cloud`.
+	 */
+	baseUrl: string
+	/**
+	 * Access token, sent as `Authorization: Bearer &lt;token&gt;`. Optional so a
+	 * client can be created first and authenticated later via `auth.login`
+	 * or `setToken`.
+	 */
+	token?: string
+	/**
+	 * Custom fetch implementation. Defaults to `globalThis.fetch`.
+	 */
+	fetch?: typeof fetch
+	/**
+	 * Extra hey-api client config merged over the defaults.
+	 */
+	config?: Omit&lt;Config, 'baseUrl' | 'auth' | 'fetch'&gt;
+}</code></pre>
+<h2 id="errors">OctojaApiError</h2>
+<p>Thrown on any non-2xx response. Fields: <code>message</code>, <code>status?</code>, <code>body</code>, <code>request?</code>, <code>response?</code>. Catch with <code>error instanceof OctojaApiError</code>.</p>
+<p><strong>Note:</strong> technician/admin routes live on <code>createOctojaClient</code> (<a href="./octoja-client.html">reference</a>).</p>
+<h2 id="resources">Resources</h2>
+<details class="resource" id="agent-agents" open>
+<summary><code>agent.agents</code><span class="count">7 methods</span><span class="src">src/agent/resources/agents.ts</span></summary>
+<p>Device enrollment and agent self-service: enroll, UI settings, launcher and<br>agent manifests, automation step results and quick-support retirement.</p>
+<article class="method" data-search="agent.agents.enroll(body: agentenrollbody): promise&lt;postagentsenrollresponse&gt; enroll an agent and receive its credentials. postagentsenroll post /api/agents/enroll">
+<h4><code>agent.agents.enroll(body: AgentEnrollBody): Promise&lt;PostAgentsEnrollResponse&gt;</code></h4>
+<p>Enroll an agent and receive its credentials.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/enroll</code></span><span class="sdk">SDK: <code>postAgentsEnroll</code></span></div>
+</article>
+<article class="method" data-search="agent.agents.uisettings(): promise&lt;getagentsuisettingsresponse&gt; fetch the agent-facing ui settings. getagentsuisettings get /api/agents/ui-settings">
+<h4><code>agent.agents.uiSettings(): Promise&lt;GetAgentsUiSettingsResponse&gt;</code></h4>
+<p>Fetch the agent-facing UI settings.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/ui-settings</code></span><span class="sdk">SDK: <code>getAgentsUiSettings</code></span></div>
+</article>
+<article class="method" data-search="agent.agents.reportautomationstepresult(body: agentautomationstepresultbody): promise&lt;void&gt; report the result of an executed automation step. postagentsautomationstepresults post /api/agents/automation-step-results">
+<h4><code>agent.agents.reportAutomationStepResult(body: AgentAutomationStepResultBody): Promise&lt;void&gt;</code></h4>
+<p>Report the result of an executed automation step.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/automation-step-results</code></span><span class="sdk">SDK: <code>postAgentsAutomationStepResults</code></span></div>
+</article>
+<article class="method" data-search="agent.agents.quicksupportretire(): promise&lt;void&gt; retire the current quick-support session. postagentsquicksupportretire post /api/agents/quick-support/retire">
+<h4><code>agent.agents.quickSupportRetire(): Promise&lt;void&gt;</code></h4>
+<p>Retire the current quick-support session.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/quick-support/retire</code></span><span class="sdk">SDK: <code>postAgentsQuickSupportRetire</code></span></div>
+</article>
+<article class="method" data-search="agent.agents.validateenrollmenttoken(body: agentenrollmenttokenvalidatebody): promise&lt;void&gt; validate an enrollment token before enrolling. postagentsenrollmenttokensvalidate post /api/agents/enrollment-tokens/validate">
+<h4><code>agent.agents.validateEnrollmentToken(body: AgentEnrollmentTokenValidateBody): Promise&lt;void&gt;</code></h4>
+<p>Validate an enrollment token before enrolling.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/enrollment-tokens/validate</code></span><span class="sdk">SDK: <code>postAgentsEnrollmentTokensValidate</code></span></div>
+</article>
+<article class="method" data-search="agent.agents.launchermanifest(body: agentlaunchermanifestbody): promise&lt;postagentslaunchermanifestresponse&gt; fetch the launcher manifest for the requesting platform. postagentslaunchermanifest post /api/agents/launcher-manifest">
+<h4><code>agent.agents.launcherManifest(body: AgentLauncherManifestBody): Promise&lt;PostAgentsLauncherManifestResponse&gt;</code></h4>
+<p>Fetch the launcher manifest for the requesting platform.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/launcher-manifest</code></span><span class="sdk">SDK: <code>postAgentsLauncherManifest</code></span></div>
+</article>
+<article class="method" data-search="agent.agents.manifest(body: agentmanifestbody): promise&lt;postagentsmanifestresponse&gt; fetch the agent manifest for the requesting platform. postagentsmanifest post /api/agents/manifest">
+<h4><code>agent.agents.manifest(body: AgentManifestBody): Promise&lt;PostAgentsManifestResponse&gt;</code></h4>
+<p>Fetch the agent manifest for the requesting platform.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/manifest</code></span><span class="sdk">SDK: <code>postAgentsManifest</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-assets" open>
+<summary><code>agent.assets</code><span class="count">4 methods</span><span class="src">src/agent/resources/assets.ts</span></summary>
+<p>Agentless asset discovery: inventory/probe targets and reporting their results.</p>
+<article class="method" data-search="agent.assets.inventorytargets(): promise&lt;getagentsinventorytargetsresponse&gt; list the agentless inventory targets configured for this agent. getagentsinventorytargets get /api/agents/inventory-targets">
+<h4><code>agent.assets.inventoryTargets(): Promise&lt;GetAgentsInventoryTargetsResponse&gt;</code></h4>
+<p>List the agentless inventory targets configured for this agent.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/inventory-targets</code></span><span class="sdk">SDK: <code>getAgentsInventoryTargets</code></span></div>
+</article>
+<article class="method" data-search="agent.assets.probetargets(): promise&lt;getagentsprobetargetsresponse&gt; list the asset probe targets configured for this agent. getagentsprobetargets get /api/agents/probe-targets">
+<h4><code>agent.assets.probeTargets(): Promise&lt;GetAgentsProbeTargetsResponse&gt;</code></h4>
+<p>List the asset probe targets configured for this agent.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/probe-targets</code></span><span class="sdk">SDK: <code>getAgentsProbeTargets</code></span></div>
+</article>
+<article class="method" data-search="agent.assets.reportinventory(body: agentinventoryreportbody): promise&lt;void&gt; submit the results of an agentless inventory scan. postagentsinventorytargetsreport post /api/agents/inventory-targets/report">
+<h4><code>agent.assets.reportInventory(body: AgentInventoryReportBody): Promise&lt;void&gt;</code></h4>
+<p>Submit the results of an agentless inventory scan.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/inventory-targets/report</code></span><span class="sdk">SDK: <code>postAgentsInventoryTargetsReport</code></span></div>
+</article>
+<article class="method" data-search="agent.assets.reportprobe(body: agentprobereportbody): promise&lt;void&gt; submit the results of an asset probe run. postagentsprobetargetsreport post /api/agents/probe-targets/report">
+<h4><code>agent.assets.reportProbe(body: AgentProbeReportBody): Promise&lt;void&gt;</code></h4>
+<p>Submit the results of an asset probe run.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/probe-targets/report</code></span><span class="sdk">SDK: <code>postAgentsProbeTargetsReport</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-auth" open>
+<summary><code>agent.auth</code><span class="count">3 methods</span><span class="src">src/agent/resources/auth.ts</span></summary>
+<p>Device-agent authentication: log in with the enrollment credentials and<br>refresh the token pair. Returned access tokens are stored on the client.</p>
+<article class="method" data-search="agent.auth.login(body: agentloginbody): promise&lt;accesstokenresponse&gt; log in with the agent's `agentid` + `secret`. stores the returned
+access token on the client. postauthlogin post /api/auth/login">
+<h4><code>agent.auth.login(body: AgentLoginBody): Promise&lt;AccessTokenResponse&gt;</code></h4>
+<p>Log in with the agent's `agentId` + `secret`. Stores the returned<br>access token on the client.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/auth/login</code></span><span class="sdk">SDK: <code>postAuthLogin</code></span></div>
+</article>
+<article class="method" data-search="agent.auth.refresh(refreshtoken: string): promise&lt;accesstokenresponse&gt; exchange a refresh token for a new token pair. stores the returned
+access token on the client. postauthrefresh post /api/auth/refresh">
+<h4><code>agent.auth.refresh(refreshToken: string): Promise&lt;AccessTokenResponse&gt;</code></h4>
+<p>Exchange a refresh token for a new token pair. Stores the returned<br>access token on the client.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/auth/refresh</code></span><span class="sdk">SDK: <code>postAuthRefresh</code></span></div>
+</article>
+<article class="method" data-search="agent.auth.logout(): promise&lt;void&gt; invalidate the current session and clear the token on the client. postauthlogout post /api/auth/logout">
+<h4><code>agent.auth.logout(): Promise&lt;void&gt;</code></h4>
+<p>Invalidate the current session and clear the token on the client.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/auth/logout</code></span><span class="sdk">SDK: <code>postAuthLogout</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-branding" open>
+<summary><code>agent.branding</code><span class="count">3 methods</span><span class="src">src/agent/resources/branding.ts</span></summary>
+<p>White-label branding served to the agent: details, icon and logo.</p>
+<article class="method" data-search="agent.branding.get(): promise&lt;getagentsbrandingresponse&gt; fetch the branding configuration. getagentsbranding get /api/agents/branding">
+<h4><code>agent.branding.get(): Promise&lt;GetAgentsBrandingResponse&gt;</code></h4>
+<p>Fetch the branding configuration.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/branding</code></span><span class="sdk">SDK: <code>getAgentsBranding</code></span></div>
+</article>
+<article class="method" data-search="agent.branding.icon(query?: agentbrandingiconquery): promise&lt;getagentsbrandingiconresponse&gt; fetch the branding icon for the requested theme. getagentsbrandingicon get /api/agents/branding/icon">
+<h4><code>agent.branding.icon(query?: AgentBrandingIconQuery): Promise&lt;GetAgentsBrandingIconResponse&gt;</code></h4>
+<p>Fetch the branding icon for the requested theme.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/branding/icon</code></span><span class="sdk">SDK: <code>getAgentsBrandingIcon</code></span></div>
+</article>
+<article class="method" data-search="agent.branding.logo(query?: agentbrandinglogoquery): promise&lt;getagentsbrandinglogoresponse&gt; fetch the branding logo for the requested theme. getagentsbrandinglogo get /api/agents/branding/logo">
+<h4><code>agent.branding.logo(query?: AgentBrandingLogoQuery): Promise&lt;GetAgentsBrandingLogoResponse&gt;</code></h4>
+<p>Fetch the branding logo for the requested theme.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/branding/logo</code></span><span class="sdk">SDK: <code>getAgentsBrandingLogo</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-checkAssignments" open>
+<summary><code>agent.checkAssignments</code><span class="count">2 methods</span><span class="src">src/agent/resources/checkAssignments.ts</span></summary>
+<p>Check assignments for this agent and submission of check results.</p>
+<article class="method" data-search="agent.checkassignments.list(): promise&lt;getagentscheckassignmentsresponse&gt; list the checks currently assigned to this agent. getagentscheckassignments get /api/agents/check-assignments">
+<h4><code>agent.checkAssignments.list(): Promise&lt;GetAgentsCheckAssignmentsResponse&gt;</code></h4>
+<p>List the checks currently assigned to this agent.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/check-assignments</code></span><span class="sdk">SDK: <code>getAgentsCheckAssignments</code></span></div>
+</article>
+<article class="method" data-search="agent.checkassignments.submitresult(body: agentcheckresultbody): promise&lt;void&gt; submit the result of an assigned check. postagentscheckresults post /api/agents/check-results">
+<h4><code>agent.checkAssignments.submitResult(body: AgentCheckResultBody): Promise&lt;void&gt;</code></h4>
+<p>Submit the result of an assigned check.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/check-results</code></span><span class="sdk">SDK: <code>postAgentsCheckResults</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-customPackages" open>
+<summary><code>agent.customPackages</code><span class="count">3 methods</span><span class="src">src/agent/resources/customPackages.ts</span></summary>
+<p>Download URLs for custom packages and their companion files, plus resolved<br>software deployments for this agent.</p>
+<article class="method" data-search="agent.custompackages.companionfiledownloadurl(packageid: string, version: string, fileid: string): promise&lt;getagentsmecustompackagesbypackageidbyversioncompanionfilesbyfileiddownloadurlresponse&gt; get a download url for a companion file of a custom package version. getagentsmecustompackagesbypackageidbyversioncompanionfilesbyfileiddownloadurl get /api/agents/me/custom-packages/{packageid}/{version}/companion-files/{fileid}/download-url">
+<h4><code>agent.customPackages.companionFileDownloadUrl(packageId: string, version: string, fileId: string): Promise&lt;GetAgentsMeCustomPackagesByPackageidByVersionCompanionFilesByFileidDownloadUrlResponse&gt;</code></h4>
+<p>Get a download URL for a companion file of a custom package version.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/me/custom-packages/{packageId}/{version}/companion-files/{fileId}/download-url</code></span><span class="sdk">SDK: <code>getAgentsMeCustomPackagesByPackageidByVersionCompanionFilesByFileidDownloadUrl</code></span></div>
+</article>
+<article class="method" data-search="agent.custompackages.downloadurl(packageid: string, version: string): promise&lt;getagentsmecustompackagesbypackageidbyversiondownloadurlresponse&gt; get a download url for a custom package version. getagentsmecustompackagesbypackageidbyversiondownloadurl get /api/agents/me/custom-packages/{packageid}/{version}/download-url">
+<h4><code>agent.customPackages.downloadUrl(packageId: string, version: string): Promise&lt;GetAgentsMeCustomPackagesByPackageidByVersionDownloadUrlResponse&gt;</code></h4>
+<p>Get a download URL for a custom package version.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/me/custom-packages/{packageId}/{version}/download-url</code></span><span class="sdk">SDK: <code>getAgentsMeCustomPackagesByPackageidByVersionDownloadUrl</code></span></div>
+</article>
+<article class="method" data-search="agent.custompackages.resolveddeployment(assignmentid: string): promise&lt;getagentsmesoftwaredeploymentsbyassignmentidresolvedresponse&gt; get the resolved deployment for assignment `assignmentid`. getagentsmesoftwaredeploymentsbyassignmentidresolved get /api/agents/me/software-deployments/{assignmentid}/resolved">
+<h4><code>agent.customPackages.resolvedDeployment(assignmentId: string): Promise&lt;GetAgentsMeSoftwareDeploymentsByAssignmentidResolvedResponse&gt;</code></h4>
+<p>Get the resolved deployment for assignment `assignmentId`.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/me/software-deployments/{assignmentId}/resolved</code></span><span class="sdk">SDK: <code>getAgentsMeSoftwareDeploymentsByAssignmentidResolved</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-networkDiscovery" open>
+<summary><code>agent.networkDiscovery</code><span class="count">2 methods</span><span class="src">src/agent/resources/networkDiscovery.ts</span></summary>
+<p>Network discovery configuration and reporting of discovered devices.</p>
+<article class="method" data-search="agent.networkdiscovery.config(): promise&lt;getagentsdiscoveryconfigresponse&gt; fetch the network discovery configuration for this agent. getagentsdiscoveryconfig get /api/agents/discovery-config">
+<h4><code>agent.networkDiscovery.config(): Promise&lt;GetAgentsDiscoveryConfigResponse&gt;</code></h4>
+<p>Fetch the network discovery configuration for this agent.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/discovery-config</code></span><span class="sdk">SDK: <code>getAgentsDiscoveryConfig</code></span></div>
+</article>
+<article class="method" data-search="agent.networkdiscovery.report(body: agentdiscoveryreportbody): promise&lt;void&gt; submit the results of a network discovery scan. postagentsdiscoveryreport post /api/agents/discovery/report">
+<h4><code>agent.networkDiscovery.report(body: AgentDiscoveryReportBody): Promise&lt;void&gt;</code></h4>
+<p>Submit the results of a network discovery scan.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/discovery/report</code></span><span class="sdk">SDK: <code>postAgentsDiscoveryReport</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-patchManagement" open>
+<summary><code>agent.patchManagement</code><span class="count">3 methods</span><span class="src">src/agent/resources/patchManagement.ts</span></summary>
+<p>Patch management for the agent: operation/restart results and UI policy.</p>
+<article class="method" data-search="agent.patchmanagement.reportoperation(body: agentpatchoperationbody): promise&lt;void&gt; report the outcome of a patch operation. postagentspatchoperationresults post /api/agents/patch-operation-results">
+<h4><code>agent.patchManagement.reportOperation(body: AgentPatchOperationBody): Promise&lt;void&gt;</code></h4>
+<p>Report the outcome of a patch operation.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/patch-operation-results</code></span><span class="sdk">SDK: <code>postAgentsPatchOperationResults</code></span></div>
+</article>
+<article class="method" data-search="agent.patchmanagement.reportrestartoutcomes(body: agentpatchrestartoutcomesbody): promise&lt;void&gt; report the outcomes of restarts after patch operations. postagentspatchrestartoutcomes post /api/agents/patch-restart-outcomes">
+<h4><code>agent.patchManagement.reportRestartOutcomes(body: AgentPatchRestartOutcomesBody): Promise&lt;void&gt;</code></h4>
+<p>Report the outcomes of restarts after patch operations.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/patch-restart-outcomes</code></span><span class="sdk">SDK: <code>postAgentsPatchRestartOutcomes</code></span></div>
+</article>
+<article class="method" data-search="agent.patchmanagement.uipolicy(): promise&lt;getagentspatchuipolicyresponse&gt; fetch the patch-related ui policy for this agent. getagentspatchuipolicy get /api/agents/patch-ui-policy">
+<h4><code>agent.patchManagement.uiPolicy(): Promise&lt;GetAgentsPatchUiPolicyResponse&gt;</code></h4>
+<p>Fetch the patch-related UI policy for this agent.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/patch-ui-policy</code></span><span class="sdk">SDK: <code>getAgentsPatchUiPolicy</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-softwareDeployment" open>
+<summary><code>agent.softwareDeployment</code><span class="count">3 methods</span><span class="src">src/agent/resources/softwareDeployment.ts</span></summary>
+<p>Software deployment for the agent: assignments, package availability and<br>the software kiosk.</p>
+<article class="method" data-search="agent.softwaredeployment.assignments(): promise&lt;getagentssoftwaredeploymentassignmentsresponse&gt; list the software deployment assignments for this agent. getagentssoftwaredeploymentassignments get /api/agents/software-deployment-assignments">
+<h4><code>agent.softwareDeployment.assignments(): Promise&lt;GetAgentsSoftwareDeploymentAssignmentsResponse&gt;</code></h4>
+<p>List the software deployment assignments for this agent.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/software-deployment-assignments</code></span><span class="sdk">SDK: <code>getAgentsSoftwareDeploymentAssignments</code></span></div>
+</article>
+<article class="method" data-search="agent.softwaredeployment.packageavailability(body: agentpackageavailabilitybody): promise&lt;postagentspackageavailabilityresponse&gt; check the availability of the requested packages. postagentspackageavailability post /api/agents/package-availability">
+<h4><code>agent.softwareDeployment.packageAvailability(body: AgentPackageAvailabilityBody): Promise&lt;PostAgentsPackageAvailabilityResponse&gt;</code></h4>
+<p>Check the availability of the requested packages.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/package-availability</code></span><span class="sdk">SDK: <code>postAgentsPackageAvailability</code></span></div>
+</article>
+<article class="method" data-search="agent.softwaredeployment.kiosk(): promise&lt;getagentssoftwarekioskresponse&gt; list the entries available in the software kiosk. getagentssoftwarekiosk get /api/agents/software-kiosk">
+<h4><code>agent.softwareDeployment.kiosk(): Promise&lt;GetAgentsSoftwareKioskResponse&gt;</code></h4>
+<p>List the entries available in the software kiosk.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/software-kiosk</code></span><span class="sdk">SDK: <code>getAgentsSoftwareKiosk</code></span></div>
+</article>
+</details>
+<details class="resource" id="agent-tickets" open>
+<summary><code>agent.tickets</code><span class="count">7 methods</span><span class="src">src/agent/resources/tickets.ts</span></summary>
+<p>Ticket handling for the agent: listing, creating, commenting and attachments.</p>
+<article class="method" data-search="agent.tickets.list(query?: agentticketslistquery): promise&lt;getagentsticketsresponse&gt; list the tickets visible to this agent, paged. getagentstickets get /api/agents/tickets">
+<h4><code>agent.tickets.list(query?: AgentTicketsListQuery): Promise&lt;GetAgentsTicketsResponse&gt;</code></h4>
+<p>List the tickets visible to this agent, paged.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/tickets</code></span><span class="sdk">SDK: <code>getAgentsTickets</code></span></div>
+</article>
+<article class="method" data-search="agent.tickets.get(id: string): promise&lt;getagentsticketsbyidresponse&gt; read the ticket identified by `id`. getagentsticketsbyid get /api/agents/tickets/{id}">
+<h4><code>agent.tickets.get(id: string): Promise&lt;GetAgentsTicketsByIdResponse&gt;</code></h4>
+<p>Read the ticket identified by `id`.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/tickets/{id}</code></span><span class="sdk">SDK: <code>getAgentsTicketsById</code></span></div>
+</article>
+<article class="method" data-search="agent.tickets.create(body: agentticketcreatebody): promise&lt;postagentsticketsresponse&gt; create a new ticket on behalf of the agent. postagentstickets post /api/agents/tickets">
+<h4><code>agent.tickets.create(body: AgentTicketCreateBody): Promise&lt;PostAgentsTicketsResponse&gt;</code></h4>
+<p>Create a new ticket on behalf of the agent.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/tickets</code></span><span class="sdk">SDK: <code>postAgentsTickets</code></span></div>
+</article>
+<article class="method" data-search="agent.tickets.addcomment(id: string, body: agentticketcommentbody): promise&lt;postagentsticketsbyidcommentsresponse&gt; add a comment to the ticket identified by `id`. postagentsticketsbyidcomments post /api/agents/tickets/{id}/comments">
+<h4><code>agent.tickets.addComment(id: string, body: AgentTicketCommentBody): Promise&lt;PostAgentsTicketsByIdCommentsResponse&gt;</code></h4>
+<p>Add a comment to the ticket identified by `id`.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/tickets/{id}/comments</code></span><span class="sdk">SDK: <code>postAgentsTicketsByIdComments</code></span></div>
+</article>
+<article class="method" data-search="agent.tickets.attachments.uploadinit(id: string, body: agentticketattachmentinitbody): promise&lt;postagentsticketsbyidattachmentsuploadinitresponse&gt; initialize an attachment upload for the ticket identified by `id`. postagentsticketsbyidattachmentsuploadinit post /api/agents/tickets/{id}/attachments/upload-init">
+<h4><code>agent.tickets.attachments.uploadInit(id: string, body: AgentTicketAttachmentInitBody): Promise&lt;PostAgentsTicketsByIdAttachmentsUploadInitResponse&gt;</code></h4>
+<p>Initialize an attachment upload for the ticket identified by `id`.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/tickets/{id}/attachments/upload-init</code></span><span class="sdk">SDK: <code>postAgentsTicketsByIdAttachmentsUploadInit</code></span></div>
+</article>
+<article class="method" data-search="agent.tickets.attachments.uploadcomplete(id: string, attachmentid: string): promise&lt;void&gt; mark the upload of attachment `attachmentid` on ticket `id` as complete. postagentsticketsbyidattachmentsbyattachmentiduploadcomplete post /api/agents/tickets/{id}/attachments/{attachmentid}/upload-complete">
+<h4><code>agent.tickets.attachments.uploadComplete(id: string, attachmentId: string): Promise&lt;void&gt;</code></h4>
+<p>Mark the upload of attachment `attachmentId` on ticket `id` as complete.</p>
+<div class="meta"><span class="ep"><span class="badge post">POST</span><code>/api/agents/tickets/{id}/attachments/{attachmentId}/upload-complete</code></span><span class="sdk">SDK: <code>postAgentsTicketsByIdAttachmentsByAttachmentidUploadComplete</code></span></div>
+</article>
+<article class="method" data-search="agent.tickets.attachments.downloadurl(id: string, attachmentid: string): promise&lt;getagentsticketsbyidattachmentsbyattachmentiddownloadurlresponse&gt; get a download url for attachment `attachmentid` on ticket `id`. getagentsticketsbyidattachmentsbyattachmentiddownloadurl get /api/agents/tickets/{id}/attachments/{attachmentid}/download-url">
+<h4><code>agent.tickets.attachments.downloadUrl(id: string, attachmentId: string): Promise&lt;GetAgentsTicketsByIdAttachmentsByAttachmentidDownloadUrlResponse&gt;</code></h4>
+<p>Get a download URL for attachment `attachmentId` on ticket `id`.</p>
+<div class="meta"><span class="ep"><span class="badge get">GET</span><code>/api/agents/tickets/{id}/attachments/{attachmentId}/download-url</code></span><span class="sdk">SDK: <code>getAgentsTicketsByIdAttachmentsByAttachmentidDownloadUrl</code></span></div>
+</article>
+</details>
+<p id="empty" hidden>No methods match the current filter.</p>
+</main>
+</div>
+<footer>DO NOT EDIT — generated by <code>bun run docs</code>. Edit JSDoc in <code>src/agent/**/*.ts</code> instead. Raw generated SDK (<code>src/generated/sdk.gen.ts</code>, 610+ functions) is documented via JSDoc/OpenAPI, not here.</footer>
+<script>
+const q = document.getElementById('q');
+const methods = Array.from(document.querySelectorAll('.method'));
+const sections = Array.from(document.querySelectorAll('details.resource'));
+const empty = document.getElementById('empty');
+const count = document.getElementById('count');
+function apply() {
+  const needle = q.value.trim().toLowerCase();
+  let visible = 0;
+  for (const m of methods) {
+    const hay = m.getAttribute('data-search') || '';
+    const hit = !needle || hay.includes(needle);
+    m.hidden = !hit;
+    if (hit) visible++;
+  }
+  for (const s of sections) {
+    const cards = Array.from(s.querySelectorAll('.method'));
+    const any = cards.some((m) => !m.hidden);
+    s.hidden = !any;
+    if (needle && any) s.open = true;
+  }
+  count.textContent = visible + ' of ' + methods.length + ' methods';
+  empty.hidden = visible !== 0;
+}
+q.addEventListener('input', apply);
+apply();
+function setTop() {
+  const h = document.querySelector('header.top');
+  if (h) document.documentElement.style.setProperty('--top', h.offsetHeight + 8 + 'px');
+}
+setTop();
+window.addEventListener('resize', setTop);
+const links = Array.from(document.querySelectorAll('.nav-link'));
+const targets = links
+  .map((a) => document.getElementById(a.getAttribute('data-target') || ''))
+  .filter((el) => el);
+function spy() {
+  const top = (document.querySelector('header.top') || { offsetHeight: 170 }).offsetHeight + 24;
+  let current = '';
+  for (const el of targets) {
+    if (el.getBoundingClientRect().top <= top) current = el.id;
+  }
+  for (const a of links) {
+    const on = a.getAttribute('data-target') === current;
+    if (on) a.classList.add('active');
+    else a.classList.remove('active');
+  }
+}
+document.addEventListener('scroll', spy, { passive: true });
+spy();
+document.getElementById('expand').addEventListener('click', () => {
+  for (const s of sections) {
+    if (!s.hidden) s.open = true;
+  }
+});
+document.getElementById('collapse').addEventListener('click', () => {
+  for (const s of sections) s.open = false;
+});
+</script>
+</body>
+</html>
