@@ -1,8 +1,17 @@
 {
   "name": "octoja-api",
   "description": "TypeScript client for the Octoja API",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "UNLICENSED",
+  "author": "Lukas Neubert (serkonda7)",
+  "homepage": "https://github.com/serkonda7/octoja-api",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serkonda7/octoja-api"
+  },
+  "bugs": {
+    "url": "https://github.com/serkonda7/octoja-api/issues"
+  },
   "keywords": [
     "octoja",
     "rmm",
