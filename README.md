@@ -1,4 +1,8 @@
 # octoja-api
+[![CI][ci-badge]][ci-status]
+[![npm version][npm-badge]][npm-link]
+[![npm updated][npm-date-badge]][npm-link]
+
 TypeScript client for the Octoja RMM API.
 
 
@@ -129,3 +133,10 @@ bun run build
 
 ## 📜 License
 The Octoja API and specification are proprietary to their respective owners.
+
+
+[ci-badge]: https://github.com/serkonda7/octoja-api/actions/workflows/ci.yml/badge.svg
+[ci-status]: https://github.com/serkonda7/octoja-api/actions/workflows/ci.yml
+[npm-badge]: https://nodei.co/npm/octoja-api.png?style=shields&data=v&color=blue
+[npm-date-badge]: https://nodei.co/npm/octoja-api.png?style=shields&data=u,d&color=blue
+[npm-link]: https://www.npmjs.com/package/octoja-api
